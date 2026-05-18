@@ -80,9 +80,9 @@ export default function WatchlistPage() {
         <P>
           Las alertas operan sobre <Term>niveles técnicos pre-definidos</Term>: umbrales en yields, precios o
           spreads que, al ser cruzados, gatillan una revisión de tesis. Provienen de tres fuentes: (1) <Term>análisis
-          histórico</Term> (e.g., bottom de TLT en $82.42 oct-2023 es un soporte clave); (2) <Term>niveles
-          psicológicos round</Term> (UST 10Y rompiendo 5% como umbral mental para market participants); (3) <Term>
-          estructura de la curva</Term> (inversión 2s10s como predictor de recesión).
+          histórico</Term> (mínimos/máximos previos del instrumento funcionan como soportes y resistencias);
+          (2) <Term>niveles psicológicos redondos</Term> (UST 10Y cruzando 5% como umbral mental para market
+          participants); (3) <Term>estructura de la curva</Term> (inversión 2s10s como predictor de recesión).
         </P>
         <P>
           La disciplina de configurar alertas antes de que se gatillen es una forma de <Term>pre-commitment</Term>

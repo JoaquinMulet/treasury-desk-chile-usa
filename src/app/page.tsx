@@ -157,9 +157,33 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
           <MetricTile label="UST 5Y" value={<Yld value={US_SNAPSHOT.yields.us_5y} decimals={3} />} delta={US_CHANGES.us_5y.day} deltaUnit="bps" spark={US_HISTORY.us_5y} sparkColor="#4493f8" />
           <MetricTile label="UST 10Y" value={<Yld value={US_SNAPSHOT.yields.us_10y} decimals={3} />} delta={US_CHANGES.us_10y.day} deltaUnit="bps" spark={US_HISTORY.us_10y} sparkColor="#4493f8" />
-          <MetricTile label="UST 30Y" value={<Yld value={US_SNAPSHOT.yields.us_30y} decimals={3} />} delta={US_CHANGES.us_30y.day} deltaUnit="bps" spark={US_HISTORY.us_30y} sparkColor="#f85149" subtitle="Sobre 5% post-oct-23" />
-          <MetricTile label="TLT" value={<Price value={US_SNAPSHOT.etfs.tlt} />} delta={US_CHANGES.tlt.day} deltaUnit="%" spark={US_HISTORY.tlt} sparkColor="#3fb950" subtitle="Bottom $82.42" />
-          <MetricTile label="EDV" value={<Price value={US_SNAPSHOT.etfs.edv} />} delta={US_CHANGES.edv.day} deltaUnit="%" spark={US_HISTORY.edv} sparkColor="#3fb950" subtitle="Bajo rango 52s" />
+          <MetricTile
+            label="UST 30Y"
+            value={<Yld value={US_SNAPSHOT.yields.us_30y} decimals={3} />}
+            delta={US_CHANGES.us_30y.day}
+            deltaUnit="bps"
+            spark={US_HISTORY.us_30y}
+            sparkColor="#f85149"
+            subtitle={`Max 28w ${Math.max(...US_HISTORY.us_30y).toFixed(2)}%`}
+          />
+          <MetricTile
+            label="TLT"
+            value={<Price value={US_SNAPSHOT.etfs.tlt} />}
+            delta={US_CHANGES.tlt.day}
+            deltaUnit="%"
+            spark={US_HISTORY.tlt}
+            sparkColor="#3fb950"
+            subtitle={`Min 28w $${Math.min(...US_HISTORY.tlt).toFixed(2)}`}
+          />
+          <MetricTile
+            label="EDV"
+            value={<Price value={US_SNAPSHOT.etfs.edv} />}
+            delta={US_CHANGES.edv.day}
+            deltaUnit="%"
+            spark={US_HISTORY.edv}
+            sparkColor="#3fb950"
+            subtitle={`Min 28w $${Math.min(...US_HISTORY.edv).toFixed(2)}`}
+          />
           <MetricTile label="MOVE" value={<Price value={US_SNAPSHOT.vol.move} decimals={1} />} delta={US_CHANGES.move.day} deltaUnit="%" spark={US_HISTORY.move} sparkColor="#d29922" subtitle="Vol implícita" />
         </div>
       </Section>
@@ -312,7 +336,13 @@ export default function Home() {
       <Section title="Política monetaria · Tipos de cambio">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <MetricTile label="TPM Chile" value={<Yld value={tpm.value} />} subtitle={fmtDate(tpm.date)} spark={recentSpark(tpm.series, 60)} sparkColor="#4493f8" />
-          <MetricTile label="Fed Funds" value={<Yld value={4.375} />} subtitle="Target 4.25–4.50" />
+          <MetricTile
+            label="Fed Funds (DFF)"
+            value={<Yld value={US_SNAPSHOT.policy.fedFunds} />}
+            delta={US_CHANGES.fedFunds.day}
+            deltaUnit="bps"
+            subtitle={`SOFR ${US_SNAPSHOT.policy.sofr.toFixed(2)}%`}
+          />
           <MetricTile label="USD/CLP" value={<Price value={usdclp.value} />} subtitle={fmtDate(usdclp.date)} spark={recentSpark(usdclp.series, 60)} sparkColor="#39d0d8" />
           <MetricTile label="UF" value={<Price value={uf.value} />} subtitle={fmtDate(uf.date)} spark={recentSpark(uf.series, 60)} sparkColor="#8b949e" />
         </div>

@@ -16,6 +16,7 @@ import { MetricTile } from "@/components/fin/metric-tile";
 import { BarGauge } from "@/components/fin/bar-gauge";
 import { Num, CLP, Yld } from "@/components/fin/num";
 import { fmtCLP } from "@/lib/format";
+import { getFx } from "@/lib/data/fx";
 
 type Currency = "CLP" | "UF" | "USD";
 type AssetClass = "DPF" | "BTU" | "BTP" | "FM_MM" | "FM_RF" | "ETF" | "BOND_USA" | "EQUITY" | "CASH";
@@ -32,7 +33,9 @@ type Holding = {
   acquisitionDate: string;
 };
 
-const FX = { CLP: 1, UF: 40763, USD: 906.68 } as Record<Currency, number>;
+// FX vivo desde BCCh (data/bcch/_catalog.json) · refrescado por cron diario.
+// Antes era hardcoded `{ CLP: 1, UF: 40763, USD: 906.68 }` — auditoría mayo 2026 lo cubrió.
+const FX = getFx() as Record<Currency, number>;
 
 const PALETTE: Record<string, string> = {
   DPF: "#8b949e", BTU: "#39d0d8", BTP: "#4493f8", FM_MM: "#8b949e",

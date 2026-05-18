@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { getFx } from "@/lib/data/fx";
 import { PageHeader, Panel } from "@/components/fin/section";
 import { Commentary, Term, P } from "@/components/fin/commentary";
 import { FinTable, FinThead, FinTbody, FinTr, FinTh, FinTd } from "@/components/fin/fin-table";
@@ -47,9 +48,10 @@ export default function StressPage() {
   const [custom, setCustom] = useState<Scenario>({ id: "custom", label: "Custom", d10y_us: 0, d10y_cl: 0, dInflCl: 0, dFxUsdClp: 0, dEquity: 0 });
 
   const adaptedHoldings: Holding[] = useMemo(() => {
+    const fxLookup = getFx() as Record<string, number>;
     return holdings.map((h, i) => {
       const name = (h.name as string) || `pos${i}`;
-      const valueCLP = ((h.quantity as number) || 0) * ((h.unitPrice as number) || 0) * ({ CLP: 1, UF: 40763, USD: 906.68 } as Record<string, number>)[(h.currency as string) || "CLP"];
+      const valueCLP = ((h.quantity as number) || 0) * ((h.unitPrice as number) || 0) * (fxLookup[(h.currency as string) || "CLP"] ?? 1);
       let clase: Holding["clase"] = "DPF_CLP";
       if (h.assetClass === "ETF" && (name.includes("EDV") || name.includes("ZROZ"))) clase = "EDV";
       else if (h.assetClass === "ETF") clase = "TLT";

@@ -6,6 +6,7 @@ import { FileText, Download, Printer } from "lucide-react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { lastValueClient as lastValue } from "@/lib/data/bcch-client";
 import { US_SNAPSHOT } from "@/lib/data/market";
+import { getFx } from "@/lib/data/fx";
 import { toast } from "sonner";
 import { PageHeader, Panel, KV } from "@/components/fin/section";
 import { Commentary, Term, P } from "@/components/fin/commentary";
@@ -14,7 +15,8 @@ import { CLP, Num, Yld, Price } from "@/components/fin/num";
 
 type Holding = { id: string; name: string; assetClass: string; currency: string; quantity: number; unitPrice: number; duration: number; yieldPct: number };
 
-const FX: Record<string, number> = { CLP: 1, UF: 40763, USD: 906.68 };
+// FX vivo desde BCCh · cron diario · ver src/lib/data/fx.ts
+const FX: Record<string, number> = getFx();
 
 export default function ReportsPage() {
   const [holdings] = useLocalStorage<Holding[]>("portfolio.holdings", []);
@@ -177,7 +179,7 @@ export default function ReportsPage() {
             <KV label="MOVE"><Price value={US_SNAPSHOT.vol.move} /></KV>
             <KV label="TPM"><Yld value={tpm?.value} /></KV>
             <KV label="USD/CLP"><Price value={usdclp?.value} /></KV>
-            <KV label="Fed Funds"><Yld value={4.375} /></KV>
+            <KV label="Fed Funds"><Yld value={US_SNAPSHOT.policy.fedFunds} /></KV>
           </div>
         </section>
 

@@ -31,10 +31,18 @@ FRED_SNAPSHOT = ROOT / "data" / "fred" / "_snapshot.json"
 
 # Tickers · key del consumer en market.ts → ticker Yahoo
 TICKERS = {
-    "tlt": "TLT",       # iShares 20+ Year Treasury Bond
-    "edv": "EDV",       # Vanguard Extended Duration Treasury
-    "vglt": "VGLT",     # Vanguard Long-Term Treasury
-    "zroz": "ZROZ",     # PIMCO 25+ Year Zero Coupon Treasury
+    # Long-duration Treasury ETFs
+    "tlt": "TLT",       # iShares 20+ Year Treasury Bond (dur ~17)
+    "edv": "EDV",       # Vanguard Extended Duration Treasury (dur ~24)
+    "vglt": "VGLT",     # Vanguard Long-Term Treasury (dur ~16)
+    "zroz": "ZROZ",     # PIMCO 25+ Year Zero Coupon Treasury (dur ~26)
+    # Intermediate/short Treasury ETFs (universe completion para /etfs)
+    "tlh": "TLH",       # iShares 10-20Y Treasury (dur ~12.5)
+    "ief": "IEF",       # iShares 7-10Y Treasury (dur ~7.5)
+    "iei": "IEI",       # iShares 3-7Y Treasury (dur ~4.5)
+    "shy": "SHY",       # iShares 1-3Y Treasury (dur ~1.9)
+    "sgov": "SGOV",     # iShares 0-3M T-Bills (dur ~0.1)
+    # Volatility & FX indices
     "move": "^MOVE",    # ICE BofA MOVE Index (Treasury volatility)
     "dxy": "DX-Y.NYB",  # ICE U.S. Dollar Index
 }

@@ -10,24 +10,36 @@ import { MetricTile } from "@/components/fin/metric-tile";
 import { LWCChart } from "@/components/charts/lwc-chart";
 import { Pct, Signed } from "@/components/fin/num";
 import { Commentary, Term, P } from "@/components/fin/commentary";
+import { US_BACKTEST_DGS10_MONTHLY } from "@/lib/data/market";
 
 type Rule = { signal: "yield_above" | "yield_below" | "always_long"; threshold: number; asset: "TLT" | "EDV" | "BTU"; hold_months: number };
 
-function generateHistorical() {
+// Historia real DGS10 (Treasury 10Y nominal · FRED) · 120 meses · auto-actualizada
+// por el cron diario. El retorno mensual estimado para TLT se aproxima vía duración:
+//   tlt_ret_m ≈ −D × Δy/100 + cupón_mensual
+// con D=17 (duración modificada TLT) y cupón ~yield/12.
+//
+// Antes esta página corría sobre `Math.sin` sintético — la auditoría de mayo 2026
+// lo cubrió. Ahora cualquier "trade" disparado en la tabla refleja yields reales.
+function buildHistMonthly(): { date: string; y10us: number; tlt_ret: number }[] {
+  const series = US_BACKTEST_DGS10_MONTHLY;
+  if (series.length < 2) return [];
   const out: { date: string; y10us: number; tlt_ret: number }[] = [];
-  let y = 4.5;
-  const start = new Date(2018, 0);
-  for (let i = 0; i < 90; i++) {
-    const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
-    const shock = (Math.sin(i * 1.13) + Math.cos(i * 0.7)) * 0.15 + (Math.sin(i * 0.3) * 0.4);
-    y = Math.max(0.5, Math.min(7, y + shock));
-    const dy = (y - (out[out.length - 1]?.y10us ?? y)) / 100;
-    const ret = -17 * dy + 0.045 / 12;
-    out.push({ date: d.toISOString().slice(0, 7), y10us: parseFloat(y.toFixed(3)), tlt_ret: parseFloat((ret * 100).toFixed(3)) });
+  for (let i = 0; i < series.length; i++) {
+    const cur = series[i].value;
+    const prev = i > 0 ? series[i - 1].value : cur;
+    const dy = (cur - prev) / 100; // pp → decimal
+    const couponMonthly = cur / 100 / 12;
+    const ret = -17 * dy + couponMonthly;
+    out.push({
+      date: series[i].time.slice(0, 7),
+      y10us: parseFloat(cur.toFixed(3)),
+      tlt_ret: parseFloat((ret * 100).toFixed(3)),
+    });
   }
   return out;
 }
-const HIST_MONTHLY = generateHistorical();
+const HIST_MONTHLY = buildHistMonthly();
 
 function runBacktest(rule: Rule, data: typeof HIST_MONTHLY) {
   const trades: { entry: string; exit: string; ret: number; entryYield: number }[] = [];
@@ -70,7 +82,7 @@ export default function BacktestPage() {
     <div className="space-y-4">
       <PageHeader
         title="Backtesting"
-        description="Reglas tactical sobre histórico proxy 90 meses · retornos TLT estimados"
+        description={`Reglas tactical sobre DGS10 real (FRED) · ${HIST_MONTHLY.length} meses · TLT vía duración 17`}
       />
 
       <Commentary title="Backtesting · disciplina y trampas comunes">
@@ -157,7 +169,7 @@ export default function BacktestPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <Panel title="Yield 10Y · histórico simulado">
+        <Panel title={`Yield 10Y · DGS10 FRED (${HIST_MONTHLY[0]?.date ?? "—"} → ${HIST_MONTHLY[HIST_MONTHLY.length - 1]?.date ?? "—"})`}>
           <LWCChart
             height={220}
             lines={[

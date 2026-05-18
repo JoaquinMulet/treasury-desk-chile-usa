@@ -7,16 +7,18 @@ import { Sparkline } from "@/components/fin/sparkline";
 import { US_HISTORY, US_HISTORY_LABELS, US_SNAPSHOT } from "@/lib/data/market";
 import { totalReturnEstimate } from "@/lib/calc/bond";
 
+// Universo completo · todos los 9 tickers vivos vía Yahoo Finance (cron diario).
+// `price` y `history` vienen de US_SNAPSHOT/US_HISTORY · cero hardcoded.
 const ETFS = [
   { ticker: "TLT", name: "iShares 20+ Year Treasury", duration: 17, ter: 0.15, aum: 50000, price: US_SNAPSHOT.etfs.tlt, history: US_HISTORY.tlt },
   { ticker: "EDV", name: "Vanguard Extended Duration", duration: 24, ter: 0.06, aum: 3000, price: US_SNAPSHOT.etfs.edv, history: US_HISTORY.edv },
-  { ticker: "ZROZ", name: "PIMCO 25+Y Zero Coupon", duration: 26, ter: 0.15, aum: 1500, price: US_SNAPSHOT.etfs.zroz, history: undefined },
-  { ticker: "VGLT", name: "Vanguard Long-Term Treasury", duration: 16, ter: 0.04, aum: 11000, price: US_SNAPSHOT.etfs.vglt, history: undefined },
-  { ticker: "TLH", name: "iShares 10-20Y Treasury", duration: 12.5, ter: 0.15, aum: 10000, price: 100, history: undefined },
-  { ticker: "IEF", name: "iShares 7-10Y Treasury", duration: 7.5, ter: 0.15, aum: 30000, price: 92, history: undefined },
-  { ticker: "IEI", name: "iShares 3-7Y Treasury", duration: 4.5, ter: 0.15, aum: 12000, price: 115, history: undefined },
-  { ticker: "SHY", name: "iShares 1-3Y Treasury", duration: 1.9, ter: 0.15, aum: 30000, price: 81, history: undefined },
-  { ticker: "SGOV", name: "iShares 0-3M T-Bills", duration: 0.1, ter: 0.09, aum: 30000, price: 100, history: undefined },
+  { ticker: "ZROZ", name: "PIMCO 25+Y Zero Coupon", duration: 26, ter: 0.15, aum: 1500, price: US_SNAPSHOT.etfs.zroz, history: US_HISTORY.zroz },
+  { ticker: "VGLT", name: "Vanguard Long-Term Treasury", duration: 16, ter: 0.04, aum: 11000, price: US_SNAPSHOT.etfs.vglt, history: US_HISTORY.vglt },
+  { ticker: "TLH", name: "iShares 10-20Y Treasury", duration: 12.5, ter: 0.15, aum: 10000, price: US_SNAPSHOT.etfs.tlh, history: US_HISTORY.tlh },
+  { ticker: "IEF", name: "iShares 7-10Y Treasury", duration: 7.5, ter: 0.15, aum: 30000, price: US_SNAPSHOT.etfs.ief, history: US_HISTORY.ief },
+  { ticker: "IEI", name: "iShares 3-7Y Treasury", duration: 4.5, ter: 0.15, aum: 12000, price: US_SNAPSHOT.etfs.iei, history: US_HISTORY.iei },
+  { ticker: "SHY", name: "iShares 1-3Y Treasury", duration: 1.9, ter: 0.15, aum: 30000, price: US_SNAPSHOT.etfs.shy, history: US_HISTORY.shy },
+  { ticker: "SGOV", name: "iShares 0-3M T-Bills", duration: 0.1, ter: 0.09, aum: 30000, price: US_SNAPSHOT.etfs.sgov, history: US_HISTORY.sgov },
 ];
 
 function useCase(d: number): string {

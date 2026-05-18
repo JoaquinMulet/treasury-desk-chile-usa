@@ -158,20 +158,75 @@ def weekly_history(series: list[tuple[str, float]], n_weeks: int) -> list[tuple[
     return sorted_weeks[-n_weeks:]
 
 
+def monthly_history(series: list[tuple[str, float]], n_months: int) -> list[tuple[str, float]]:
+    """Toma el último valor de cada mes calendario en los últimos `n_months` meses.
+    Útil para series largas (backtest) sin engordar el JSON con data diaria.
+    Devuelve lista cronológica de hasta n_months puntos."""
+    if not series:
+        return []
+    by_month: dict[str, tuple[str, float]] = {}
+    for d_str, v in series:
+        ym = d_str[:7]  # YYYY-MM
+        by_month[ym] = (d_str, v)
+    sorted_months = sorted(by_month.values(), key=lambda x: x[0])
+    return sorted_months[-n_months:]
+
+
+def changes_block(series: list[tuple[str, float]]) -> dict | None:
+    """Devuelve diccionario {day, week, month} de cambios en bps · None si no hay serie."""
+    if not series:
+        return None
+    return {
+        "day": change_bps(series, 1),
+        "week": change_bps(series, 5),
+        "month": change_bps(series, 21),
+    }
+
+
+def last_or_none(series: list[tuple[str, float]]) -> float | None:
+    return series[-1][1] if series else None
+
+
 def write_snapshot() -> None:
     """Genera data/fred/_snapshot.json para consumo desde market.ts (client-safe).
-    Estructura:
-      { as_of, yields {us_5y, us_10y, us_30y}, changes_bps {1d/1w/1m por yield},
-        history { labels: [...], us_5y: [...], us_10y: [...], us_30y: [...] } }
+
+    Estructura extendida (cubre la auditoría de mayo 2026):
+      as_of, source
+      yields.nominal:  us_1mo, us_3mo, us_6mo, us_1y, us_2y, us_5y, us_7y, us_10y, us_20y, us_30y
+      yields.tips:     us_5y, us_10y, us_20y, us_30y
+      yields.bei:      us_5y, us_10y
+      spreads:         t10y2y, t10y3m (último valor)
+      policy:          fed_funds, sofr (último valor)
+      changes_bps:     mismo árbol que yields (day/week/month en bps)
+      history.labels:  array de fechas (28 weekly samples)
+      history.<tenor>: array de yields aligned a labels
+      backtest.dgs10_monthly: last 120 months [{date, value}, ...] para /backtest
     """
-    s5 = read_csv_series("DGS5")
-    s10 = read_csv_series("DGS10")
-    s30 = read_csv_series("DGS30")
+    # Cargamos todas las series una vez
+    nominal_codes = {
+        "us_1mo": "DGS1MO", "us_3mo": "DGS3MO", "us_6mo": "DGS6MO",
+        "us_1y": "DGS1", "us_2y": "DGS2", "us_5y": "DGS5",
+        "us_7y": "DGS7", "us_10y": "DGS10", "us_20y": "DGS20", "us_30y": "DGS30",
+    }
+    tips_codes = {
+        "us_5y": "DFII5", "us_10y": "DFII10", "us_20y": "DFII20", "us_30y": "DFII30",
+    }
+    bei_codes = {"us_5y": "T5YIE", "us_10y": "T10YIE"}
+    spread_codes = {"t10y2y": "T10Y2Y", "t10y3m": "T10Y3M"}
+    policy_codes = {"fed_funds": "DFF", "sofr": "SOFR"}
+
+    nominal = {k: read_csv_series(v) for k, v in nominal_codes.items()}
+    tips = {k: read_csv_series(v) for k, v in tips_codes.items()}
+    bei = {k: read_csv_series(v) for k, v in bei_codes.items()}
+    spreads = {k: read_csv_series(v) for k, v in spread_codes.items()}
+    policy = {k: read_csv_series(v) for k, v in policy_codes.items()}
+
+    s10 = nominal["us_10y"]
     if not s10:
-        print("WARN: DGS10 vacío, no se genera snapshot", file=sys.stderr)
+        print("WARN: DGS10 vacio, no se genera snapshot", file=sys.stderr)
         return
 
-    # Construir history weekly · alineamos por dates del 10Y (proxy del calendario)
+    # History weekly · alineada al calendario del 10Y (proxy del calendario de trading)
     hist10 = weekly_history(s10, n_weeks=28)
     labels = [d for d, _ in hist10]
 
@@ -183,38 +238,40 @@ def write_snapshot() -> None:
         "as_of": s10[-1][0],
         "source": "FRED · https://fred.stlouisfed.org/",
         "yields": {
-            "us_5y": s5[-1][1] if s5 else None,
-            "us_10y": s10[-1][1],
-            "us_30y": s30[-1][1] if s30 else None,
+            "nominal": {k: last_or_none(s) for k, s in nominal.items()},
+            "tips": {k: last_or_none(s) for k, s in tips.items()},
+            "bei": {k: last_or_none(s) for k, s in bei.items()},
         },
+        "spreads": {k: last_or_none(s) for k, s in spreads.items()},
+        "policy": {k: last_or_none(s) for k, s in policy.items()},
         "changes_bps": {
-            "us_5y": {
-                "day": change_bps(s5, 1),
-                "week": change_bps(s5, 5),
-                "month": change_bps(s5, 21),
-            } if s5 else None,
-            "us_10y": {
-                "day": change_bps(s10, 1),
-                "week": change_bps(s10, 5),
-                "month": change_bps(s10, 21),
-            },
-            "us_30y": {
-                "day": change_bps(s30, 1),
-                "week": change_bps(s30, 5),
-                "month": change_bps(s30, 21),
-            } if s30 else None,
+            "nominal": {k: changes_block(s) for k, s in nominal.items()},
+            "tips": {k: changes_block(s) for k, s in tips.items()},
+            "bei": {k: changes_block(s) for k, s in bei.items()},
+            "spreads": {k: changes_block(s) for k, s in spreads.items()},
+            "policy": {k: changes_block(s) for k, s in policy.items()},
         },
         "history": {
             "labels": labels,
-            "us_5y": align(s5),
-            "us_10y": [v for _, v in hist10],
-            "us_30y": align(s30),
+            "nominal": {k: align(s) for k, s in nominal.items()},
+            "tips": {k: align(s) for k, s in tips.items()},
+            "bei": {k: align(s) for k, s in bei.items()},
+            "spreads": {k: align(s) for k, s in spreads.items()},
+        },
+        # Monthly long-run history (10 años · 120 meses) para /backtest
+        "backtest": {
+            "dgs10_monthly": [
+                {"date": d, "value": v} for d, v in monthly_history(s10, n_months=120)
+            ],
         },
     }
     snap_path = OUT / "_snapshot.json"
     with open(snap_path, "w", encoding="utf-8") as f:
         json.dump(snapshot, f, indent=2)
-    print(f"\n[snapshot] {snap_path.name} · as_of {snapshot['as_of']} · history {len(labels)}w")
+    print(
+        f"\n[snapshot] {snap_path.name} · as_of {snapshot['as_of']} · "
+        f"history {len(labels)}w · backtest {len(snapshot['backtest']['dgs10_monthly'])}m"
+    )
 
 
 def main():
