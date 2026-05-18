@@ -38,6 +38,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    # Los secrets (BCCH_USER, BCCH_PASS, FRED_API_KEY) viven dentro del
+    # environment llamado "BCCH_USER" en este repo. Declarar `environment`
+    # aquí es lo que le da al job acceso a esos environment-scoped secrets.
+    environment: BCCH_USER
     timeout-minutes: 10
     steps:
       - name: Checkout
