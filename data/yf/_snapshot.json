@@ -2,63 +2,63 @@
   "as_of": "2026-05-18",
   "source": "Yahoo Finance \u00b7 via yfinance",
   "prices": {
-    "tlt": 83.575,
-    "edv": 61.4,
-    "vglt": 53.55,
-    "zroz": 60.18,
-    "tlh": 97.7623,
-    "ief": 93.4884,
-    "iei": 116.935,
-    "shy": 82.0826,
-    "sgov": 100.56,
+    "tlt": 83.67,
+    "edv": 61.42,
+    "vglt": 53.595,
+    "zroz": 60.25,
+    "tlh": 97.8506,
+    "ief": 93.5406,
+    "iei": 116.9601,
+    "shy": 82.0898,
+    "sgov": 100.55,
     "move": 79.87,
-    "dxy": 98.989
+    "dxy": 99.051
   },
   "changes_pct": {
     "tlt": {
-      "day": -0.1,
-      "week": -2.32,
-      "month": -4.01
+      "day": 0.01,
+      "week": -2.21,
+      "month": -3.9
     },
     "edv": {
-      "day": -0.11,
-      "week": -3.31,
-      "month": -5.09
+      "day": -0.08,
+      "week": -3.28,
+      "month": -5.05
     },
     "vglt": {
-      "day": -0.06,
-      "week": -2.14,
-      "month": -3.77
+      "day": 0.03,
+      "week": -2.06,
+      "month": -3.69
     },
     "zroz": {
-      "day": -0.13,
-      "week": -3.56,
-      "month": -5.39
+      "day": -0.02,
+      "week": -3.45,
+      "month": -5.28
     },
     "tlh": {
-      "day": -0.06,
-      "week": -2.01,
-      "month": -3.56
+      "day": 0.03,
+      "week": -1.92,
+      "month": -3.47
     },
     "ief": {
-      "day": -0.02,
-      "week": -1.22,
-      "month": -2.55
+      "day": 0.03,
+      "week": -1.16,
+      "month": -2.49
     },
     "iei": {
-      "day": -0.01,
-      "week": -0.73,
-      "month": -1.75
+      "day": 0.01,
+      "week": -0.71,
+      "month": -1.73
     },
     "shy": {
-      "day": 0.03,
-      "week": -0.17,
+      "day": 0.04,
+      "week": -0.16,
       "month": -0.67
     },
     "sgov": {
-      "day": 0.01,
-      "week": 0.07,
-      "month": 0.0
+      "day": 0.0,
+      "week": 0.06,
+      "month": -0.01
     },
     "move": {
       "day": 14.71,
@@ -66,9 +66,9 @@
       "month": 21.22
     },
     "dxy": {
-      "day": -0.28,
-      "week": 1.07,
-      "month": 0.91
+      "day": -0.22,
+      "week": 1.13,
+      "month": 0.97
     }
   },
   "history": {
