@@ -2,33 +2,33 @@
   "as_of": "2026-05-18",
   "source": "Yahoo Finance \u00b7 via yfinance",
   "prices": {
-    "tlt": 83.605,
-    "edv": 61.345,
-    "vglt": 53.555,
-    "zroz": 60.14,
+    "tlt": 83.515,
+    "edv": 61.235,
+    "vglt": 53.5,
+    "zroz": 60.04,
     "move": 79.87,
-    "dxy": 99.074
+    "dxy": 99.089
   },
   "changes_pct": {
     "tlt": {
-      "day": -0.07,
-      "week": -2.28,
-      "month": -3.98
+      "day": -0.17,
+      "week": -2.39,
+      "month": -4.08
     },
     "edv": {
-      "day": -0.2,
-      "week": -3.39,
-      "month": -5.17
+      "day": -0.38,
+      "week": -3.57,
+      "month": -5.34
     },
     "vglt": {
-      "day": -0.05,
-      "week": -2.13,
-      "month": -3.76
+      "day": -0.15,
+      "week": -2.23,
+      "month": -3.86
     },
     "zroz": {
-      "day": -0.2,
-      "week": -3.62,
-      "month": -5.46
+      "day": -0.37,
+      "week": -3.78,
+      "month": -5.61
     },
     "move": {
       "day": 14.71,
@@ -36,9 +36,9 @@
       "month": 21.22
     },
     "dxy": {
-      "day": -0.2,
-      "week": 1.16,
-      "month": 0.99
+      "day": -0.18,
+      "week": 1.17,
+      "month": 1.01
     }
   },
   "history": {
