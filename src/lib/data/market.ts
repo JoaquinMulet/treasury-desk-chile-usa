@@ -1,18 +1,71 @@
 /**
- * Snapshot de mercado USA. Por ahora valores cacheados manualmente desde yfinance.
- * Sprint posterior: API route que llama Python script de actualización.
+ * Snapshot de mercado USA · client-safe (sin node:fs).
+ *
+ * YIELDS (us_5y/10y/30y) vienen del snapshot JSON generado por
+ * `scripts/fred_fetch.py`, que el cron de GitHub Actions actualiza
+ * cada día hábil a las 23:00 UTC (post-cierre USA y CL).
+ *
+ * ETFs (TLT, EDV, VGLT, ZROZ), MOVE y DXY no están en FRED — siguen
+ * hardcoded como fallback. TODO: añadir scraper Stooq/Yahoo para
+ * cerrar ese gap. Hasta entonces, esos valores reflejan el último
+ * pull manual del 15-may-2026.
+ *
+ * Import del JSON es estático (resolveJsonModule en tsconfig) y
+ * client-safe; este archivo se puede importar desde "use client"
+ * components sin problema (watchlist, ticker-bar, etc.).
  */
 
 import { TimePoint } from "./types";
+import snapshot from "../../../data/fred/_snapshot.json";
 
-// Datos al cierre del 15-may-2026 (yfinance verificado)
-export const US_SNAPSHOT = {
-  asOf: "2026-05-15",
+// ---------- Tipado explícito del snapshot ----------
+type FredSnapshot = {
+  as_of: string;
+  source: string;
   yields: {
-    us_5y: 4.258,
-    us_10y: 4.595,
-    us_30y: 5.128,
+    us_5y: number | null;
+    us_10y: number;
+    us_30y: number | null;
+  };
+  changes_bps: {
+    us_5y: { day: number | null; week: number | null; month: number | null } | null;
+    us_10y: { day: number | null; week: number | null; month: number | null };
+    us_30y: { day: number | null; week: number | null; month: number | null } | null;
+  };
+  history: {
+    labels: string[];
+    us_5y: (number | null)[];
+    us_10y: number[];
+    us_30y: (number | null)[];
+  };
+};
+
+const snap = snapshot as FredSnapshot;
+
+// Forward-fill simple: si un valor es null, usar el último válido anterior.
+// Necesario porque DGS5 y DGS30 pueden tener gaps relativos al calendario de DGS10.
+function forwardFill(arr: (number | null)[], fallback: number): number[] {
+  const out: number[] = new Array(arr.length);
+  let last = fallback;
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] !== null && Number.isFinite(arr[i] as number)) {
+      last = arr[i] as number;
+    }
+    out[i] = last;
+  }
+  return out;
+}
+
+// ---------- US_SNAPSHOT (spot values) ----------
+export const US_SNAPSHOT = {
+  asOf: snap.as_of,
+  source: snap.source,
+  yields: {
+    us_5y: snap.yields.us_5y ?? 0,
+    us_10y: snap.yields.us_10y,
+    us_30y: snap.yields.us_30y ?? 0,
   },
+  // TODO: migrar a fuente live (Stooq CSV o Yahoo Finance via API route)
   etfs: {
     tlt: 83.66,
     edv: 61.47,
@@ -27,34 +80,52 @@ export const US_SNAPSHOT = {
   },
 } as const;
 
-// Cambios diarios y semanales (al 15-may)
+// ---------- US_CHANGES (delta diario / semanal) ----------
+const c5 = snap.changes_bps.us_5y;
+const c10 = snap.changes_bps.us_10y;
+const c30 = snap.changes_bps.us_30y;
+
 export const US_CHANGES = {
-  us_5y: { day: 13.7, week: 19 }, // bps
-  us_10y: { day: 13.7, week: 18.5 },
-  us_30y: { day: 12, week: 14 },
+  us_5y: { day: c5?.day ?? 0, week: c5?.week ?? 0 }, // bps
+  us_10y: { day: c10.day ?? 0, week: c10.week ?? 0 }, // bps
+  us_30y: { day: c30?.day ?? 0, week: c30?.week ?? 0 }, // bps
+  // TODO: derivar de fuente live al migrar ETF/MOVE/DXY
   tlt: { day: -1.48, week: -2.22 }, // %
-  edv: { day: -2.15, week: -3.20 },
-  move: { day: 14.71, week: 12.91 },
-  dxy: { day: 0.40, week: 1.36 },
+  edv: { day: -2.15, week: -3.20 }, // %
+  move: { day: 14.71, week: 12.91 }, // %
+  dxy: { day: 0.40, week: 1.36 }, // %
 } as const;
 
-/**
- * Series históricas USA (subset semanal para gráficas, desde nov-2025).
- * Sprint posterior: pull diario completo desde yfinance via API route.
- */
-export const US_HISTORY_LABELS = [
-  "2025-11-03", "2025-11-10", "2025-11-17", "2025-11-24", "2025-12-02", "2025-12-09", "2025-12-16", "2025-12-23", "2025-12-31",
-  "2026-01-08", "2026-01-15", "2026-01-23", "2026-01-30", "2026-02-06", "2026-02-13", "2026-02-23", "2026-03-02", "2026-03-09",
-  "2026-03-16", "2026-03-23", "2026-03-30", "2026-04-07", "2026-04-14", "2026-04-21", "2026-04-28", "2026-05-05", "2026-05-12", "2026-05-15"
-];
+// ---------- US_HISTORY (series semanales, 28 puntos · ~6 meses) ----------
+export const US_HISTORY_LABELS = snap.history.labels;
+
+const us10Hist = snap.history.us_10y;
+const us5Hist = forwardFill(snap.history.us_5y, us10Hist[0] - 0.4);
+const us30Hist = forwardFill(snap.history.us_30y, us10Hist[0] + 0.4);
+
+// ETFs/MOVE: serie hardcoded de 28 puntos del mismo período (nov-2025 → may-2026)
+// alineadas aproximadamente con las fechas de FRED. TODO: migrar a fuente live.
+const FALLBACK_HIST = {
+  move: [67.2, 78.9, 82.6, 76.8, 69.9, 75.4, 67.1, 61.2, 64.0, 66.9, 56.1, 56.2, 59.2, 63.6, 70.1, 68.0, 73.2, 79.7, 85.2, 98.2, 108.3, 83.2, 74.3, 70.8, 68.7, 76.8, 71.7, 79.87],
+  tlt: [87.76, 87.58, 87.13, 88.03, 87.17, 86.34, 86.25, 86.21, 85.88, 86.07, 87.01, 86.64, 85.85, 86.58, 88.74, 88.76, 88.93, 88.55, 86.54, 85.73, 86.12, 86.32, 86.89, 86.25, 86.05, 85.43, 84.99, 83.66],
+  edv: [67.12, 66.86, 66.18, 67.03, 66.01, 65.14, 64.78, 64.76, 64.25, 64.33, 65.59, 65.17, 64.09, 64.79, 67.25, 67.21, 67.42, 67.09, 64.69, 64.01, 64.37, 64.53, 65.00, 64.31, 64.11, 63.42, 62.87, 61.47],
+};
+
+// Si el snapshot tiene N labels, recortamos los fallback a la misma longitud
+// (toma los N últimos) para mantener la alineación cardinal de los arrays.
+function trimToLength(arr: number[], n: number): number[] {
+  return arr.length >= n ? arr.slice(-n) : [...new Array(n - arr.length).fill(arr[0] ?? 0), ...arr];
+}
+
+const N = US_HISTORY_LABELS.length;
 
 export const US_HISTORY = {
-  us_10y: [4.106,4.110,4.133,4.038,4.086,4.186,4.149,4.169,4.163,4.183,4.160,4.239,4.241,4.206,4.056,4.029,4.048,4.136,4.220,4.334,4.342,4.343,4.256,4.292,4.354,4.416,4.463,4.595],
-  us_30y: [4.689,4.702,4.736,4.678,4.741,4.809,4.824,4.831,4.840,4.858,4.787,4.833,4.872,4.855,4.698,4.696,4.698,4.740,4.859,4.912,4.905,4.921,4.868,4.898,4.944,4.984,5.031,5.128],
-  us_5y:  [3.715,3.710,3.721,3.605,3.659,3.780,3.693,3.734,3.722,3.736,3.762,3.839,3.797,3.755,3.609,3.582,3.621,3.736,3.803,3.950,3.979,3.976,3.871,3.908,3.983,4.072,4.124,4.258],
-  move:   [67.2,78.9,82.6,76.8,69.9,75.4,67.1,61.2,64.0,66.9,56.1,56.2,59.2,63.6,70.1,68.0,73.2,79.7,85.2,98.2,108.3,83.2,74.3,70.8,68.7,76.8,71.7,79.87],
-  tlt:    [87.76,87.58,87.13,88.03,87.17,86.34,86.25,86.21,85.88,86.07,87.01,86.64,85.85,86.58,88.74,88.76,88.93,88.55,86.54,85.73,86.12,86.32,86.89,86.25,86.05,85.43,84.99,83.66],
-  edv:    [67.12,66.86,66.18,67.03,66.01,65.14,64.78,64.76,64.25,64.33,65.59,65.17,64.09,64.79,67.25,67.21,67.42,67.09,64.69,64.01,64.37,64.53,65.00,64.31,64.11,63.42,62.87,61.47],
+  us_5y: us5Hist,
+  us_10y: us10Hist,
+  us_30y: us30Hist,
+  move: trimToLength(FALLBACK_HIST.move, N),
+  tlt: trimToLength(FALLBACK_HIST.tlt, N),
+  edv: trimToLength(FALLBACK_HIST.edv, N),
 };
 
 export function usHistoryToTimePoints(key: keyof typeof US_HISTORY): TimePoint[] {

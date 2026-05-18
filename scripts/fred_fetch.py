@@ -5,12 +5,21 @@ El .env NO se commitea (está en .gitignore).
 
 Uso:
   uv run --with requests --with python-dotenv python scripts/fred_fetch.py
+  uv run --with requests --with python-dotenv python scripts/fred_fetch.py --snapshot-only
 
-Devuelve CSV en data/fred/<series_id>.csv para cada serie consultada.
+El segundo modo regenera `_snapshot.json` desde los CSVs en disco sin
+hacer fetch al API — útil para regenerar el JSON consumible por
+`src/lib/data/market.ts` sin requerir API key.
+
+Devuelve:
+  - data/fred/<series_id>.csv para cada serie consultada
+  - data/fred/_snapshot.json con yields/changes/history para market.ts
 """
+import json
 import os
 import sys
 import time
+from datetime import date, datetime, timedelta
 from pathlib import Path
 import requests
 from dotenv import load_dotenv
@@ -18,8 +27,10 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
+SNAPSHOT_ONLY = "--snapshot-only" in sys.argv
+
 API_KEY = os.environ.get("FRED_API_KEY")
-if not API_KEY:
+if not API_KEY and not SNAPSHOT_ONLY:
     print("ERROR: FRED_API_KEY no definido en .env", file=sys.stderr)
     sys.exit(1)
 
@@ -95,7 +106,123 @@ def write_csv(code: str, observations: list[dict]) -> int:
     return rows
 
 
+def read_csv_series(code: str) -> list[tuple[str, float]]:
+    """Lee un CSV ya escrito (date,value) y devuelve [(date, value), ...] ordenado."""
+    path = OUT / f"{code}.csv"
+    if not path.exists():
+        return []
+    out: list[tuple[str, float]] = []
+    with open(path, "r", encoding="utf-8") as f:
+        next(f, None)  # skip header
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split(",")
+            if len(parts) != 2:
+                continue
+            try:
+                out.append((parts[0], float(parts[1])))
+            except ValueError:
+                continue
+    out.sort(key=lambda x: x[0])
+    return out
+
+
+def change_bps(series: list[tuple[str, float]], lag_days: int) -> float | None:
+    """Diferencia en bps entre el último valor y el de hace `lag_days`.
+    Usa lookup por índice (asume series diaria sin gaps grandes; aproxima).
+    Devuelve None si no hay historia suficiente."""
+    if len(series) < lag_days + 1:
+        return None
+    last = series[-1][1]
+    prev = series[-1 - lag_days][1]
+    return round((last - prev) * 100, 2)  # pp → bps
+
+
+def weekly_history(series: list[tuple[str, float]], n_weeks: int) -> list[tuple[str, float]]:
+    """Toma el último valor de cada semana ISO en los últimos `n_weeks * 7` días.
+    Devuelve lista cronológica de hasta n_weeks puntos (date, value)."""
+    if not series:
+        return []
+    cutoff = datetime.strptime(series[-1][0], "%Y-%m-%d").date() - timedelta(days=n_weeks * 7 + 7)
+    recent = [(d, v) for d, v in series if datetime.strptime(d, "%Y-%m-%d").date() >= cutoff]
+    by_week: dict[tuple[int, int], tuple[str, float]] = {}
+    for d_str, v in recent:
+        d = datetime.strptime(d_str, "%Y-%m-%d").date()
+        iso = d.isocalendar()
+        key = (iso.year, iso.week)
+        # Última observación de la semana gana (recent[] ya está ordenada ascendente)
+        by_week[key] = (d_str, v)
+    sorted_weeks = sorted(by_week.values(), key=lambda x: x[0])
+    return sorted_weeks[-n_weeks:]
+
+
+def write_snapshot() -> None:
+    """Genera data/fred/_snapshot.json para consumo desde market.ts (client-safe).
+    Estructura:
+      { as_of, yields {us_5y, us_10y, us_30y}, changes_bps {1d/1w/1m por yield},
+        history { labels: [...], us_5y: [...], us_10y: [...], us_30y: [...] } }
+    """
+    s5 = read_csv_series("DGS5")
+    s10 = read_csv_series("DGS10")
+    s30 = read_csv_series("DGS30")
+    if not s10:
+        print("WARN: DGS10 vacío, no se genera snapshot", file=sys.stderr)
+        return
+
+    # Construir history weekly · alineamos por dates del 10Y (proxy del calendario)
+    hist10 = weekly_history(s10, n_weeks=28)
+    labels = [d for d, _ in hist10]
+
+    def align(series: list[tuple[str, float]]) -> list[float | None]:
+        by_date = dict(series)
+        return [by_date.get(d) for d in labels]
+
+    snapshot = {
+        "as_of": s10[-1][0],
+        "source": "FRED · https://fred.stlouisfed.org/",
+        "yields": {
+            "us_5y": s5[-1][1] if s5 else None,
+            "us_10y": s10[-1][1],
+            "us_30y": s30[-1][1] if s30 else None,
+        },
+        "changes_bps": {
+            "us_5y": {
+                "day": change_bps(s5, 1),
+                "week": change_bps(s5, 5),
+                "month": change_bps(s5, 21),
+            } if s5 else None,
+            "us_10y": {
+                "day": change_bps(s10, 1),
+                "week": change_bps(s10, 5),
+                "month": change_bps(s10, 21),
+            },
+            "us_30y": {
+                "day": change_bps(s30, 1),
+                "week": change_bps(s30, 5),
+                "month": change_bps(s30, 21),
+            } if s30 else None,
+        },
+        "history": {
+            "labels": labels,
+            "us_5y": align(s5),
+            "us_10y": [v for _, v in hist10],
+            "us_30y": align(s30),
+        },
+    }
+    snap_path = OUT / "_snapshot.json"
+    with open(snap_path, "w", encoding="utf-8") as f:
+        json.dump(snapshot, f, indent=2)
+    print(f"\n[snapshot] {snap_path.name} · as_of {snapshot['as_of']} · history {len(labels)}w")
+
+
 def main():
+    if SNAPSHOT_ONLY:
+        print("Modo --snapshot-only · saltando fetch al API\n")
+        write_snapshot()
+        return
+
     total = 0
     failed = []
     for code, label in SERIES:
@@ -116,6 +243,10 @@ def main():
 
     print(f"\n{'=' * 60}")
     print(f"Total: {total} observaciones, {len(SERIES) - len(failed)}/{len(SERIES)} series OK")
+
+    # Snapshot consumible por market.ts — se regenera siempre que el fetch corra
+    write_snapshot()
+
     if failed:
         print("\nFallidas:")
         for code, msg in failed:
