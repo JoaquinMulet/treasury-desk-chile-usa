@@ -230,7 +230,7 @@ def main():
             print(f"[{code}] {label}...", end=" ", flush=True)
             obs = fetch_series(code)
             n = write_csv(code, obs)
-            print(f"{n} obs  ({obs[0]['date']} → {obs[-1]['date']})" if n > 0 else "EMPTY")
+            print(f"{n} obs  ({obs[0]['date']} -> {obs[-1]['date']})" if n > 0 else "EMPTY")
             total += n
             # Rate-limit cortesía — FRED no impone límite estricto pero conviene espaciar
             time.sleep(0.15)
