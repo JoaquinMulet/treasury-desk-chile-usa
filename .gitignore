@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Papers académicos · descargas personales, no redistribuir
+public/SSRN-*.pdf
+public/*-paper.pdf
