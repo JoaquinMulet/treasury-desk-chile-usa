@@ -1,0 +1,86 @@
+name: Refresh market data
+
+# ------------------------------------------------------------------
+# Cron diario que descarga las series BCCh + FRED y commitea los
+# CSVs actualizados al repo. Schedule en UTC.
+#
+# Setup requerido (una vez):
+#   1. Crear los secrets en GitHub:
+#      Settings → Secrets and variables → Actions → New repository secret
+#      - BCCH_USER       (email registrado en si3.bcentral.cl)
+#      - BCCH_PASS       (password de la cuenta BCCh)
+#      - FRED_API_KEY    (key de fred.stlouisfed.org)
+#   2. Verificar que el workflow tiene permisos de write:
+#      Settings → Actions → General → Workflow permissions
+#      → "Read and write permissions" + "Allow GitHub Actions to create PRs"
+#   3. Ejecutar la primera vez manualmente desde la pestaña Actions
+#      (botón "Run workflow") para validar la configuración.
+# ------------------------------------------------------------------
+
+on:
+  schedule:
+    # 23:00 UTC, lunes a viernes.
+    # = 18:00 ET (EDT) / 19:00 ET (EST) — después del cierre USA
+    # = 19:00 CLT (verano CL) / 20:00 CLT (invierno CL) — después del cierre Chile
+    # FRED publica yields entre 16:30 y 18:00 ET; BCCh publica antes del cierre.
+    # 23:00 UTC garantiza ambas fuentes ya actualizadas.
+    - cron: "0 23 * * 1-5"
+  workflow_dispatch:
+    # Permite ejecutar manualmente desde la UI de GitHub.
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    # Los secrets (BCCH_USER, BCCH_PASS, FRED_API_KEY) viven dentro del
+    # environment llamado "BCCH_USER" en este repo. Declarar `environment`
+    # aquí es lo que le da al job acceso a esos environment-scoped secrets.
+    environment: BCCH_USER
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch BCCh data
+        env:
+          BCCH_USER: ${{ secrets.BCCH_USER }}
+          BCCH_PASS: ${{ secrets.BCCH_PASS }}
+        continue-on-error: true
+        run: |
+          uv run --with requests --with python-dotenv --with pandas python scripts/bcch_fetch.py
+
+      - name: Fetch FRED data
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        continue-on-error: true
+        run: |
+          uv run --with requests --with python-dotenv python scripts/fred_fetch.py
+
+      - name: Fetch Yahoo Finance data (ETFs + MOVE + DXY)
+        continue-on-error: true
+        run: |
+          uv run --with yfinance --with python-dotenv python scripts/yf_fetch.py
+
+      - name: Commit and push if data changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "No data changes to commit — sources unchanged or fetch failed."
+          else
+            DATE=$(date -u +%Y-%m-%d)
+            git commit -m "chore(data): refresh BCCh + FRED · ${DATE}"
+            git push
+          fi
