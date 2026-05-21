@@ -30,6 +30,7 @@ on:
 
 permissions:
   contents: write
+  issues: write # para abrir un issue si un fetch falla
 
 concurrency:
   group: refresh-data
@@ -53,6 +54,7 @@ jobs:
           python-version: "3.12"
 
       - name: Fetch BCCh data
+        id: bcch
         env:
           BCCH_USER: ${{ secrets.BCCH_USER }}
           BCCH_PASS: ${{ secrets.BCCH_PASS }}
@@ -61,6 +63,7 @@ jobs:
           uv run --with requests --with python-dotenv --with pandas python scripts/bcch_fetch.py
 
       - name: Fetch FRED data
+        id: fred
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         continue-on-error: true
@@ -68,6 +71,7 @@ jobs:
           uv run --with requests --with python-dotenv python scripts/fred_fetch.py
 
       - name: Fetch Yahoo Finance data (ETFs + MOVE + DXY)
+        id: yf
         continue-on-error: true
         run: |
           uv run --with yfinance --with python-dotenv python scripts/yf_fetch.py
@@ -84,3 +88,37 @@ jobs:
             git commit -m "chore(data): refresh BCCh + FRED · ${DATE}"
             git push
           fi
+
+      # Las 3 fuentes corren con continue-on-error: una falla transitoria no
+      # rompe el run ni bloquea las otras. Pero eso deja la falla silenciosa.
+      # Este step abre un GitHub Issue cuando algún fetch falló, para que la
+      # degradación sea visible sin tener que revisar logs a diario.
+      - name: Alert on fetch failure
+        if: steps.bcch.outcome == 'failure' || steps.fred.outcome == 'failure' || steps.yf.outcome == 'failure'
+        env:
+          BCCH_OUTCOME: ${{ steps.bcch.outcome }}
+          FRED_OUTCOME: ${{ steps.fred.outcome }}
+          YF_OUTCOME: ${{ steps.yf.outcome }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failed = [];
+            if (process.env.BCCH_OUTCOME === 'failure') failed.push('BCCh');
+            if (process.env.FRED_OUTCOME === 'failure') failed.push('FRED');
+            if (process.env.YF_OUTCOME === 'failure') failed.push('Yahoo Finance');
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Data refresh: fallo en ${failed.join(', ')} · ${today}`,
+              body: [
+                `El cron de datos falló en: **${failed.join(', ')}**.`,
+                ``,
+                `Run con los logs: ${runUrl}`,
+                ``,
+                `El cron reintenta automáticamente el próximo día hábil. Si el`,
+                `fallo persiste 2+ días, investigar la fuente upstream`,
+                `(credenciales BCCh, rate-limit FRED, cambio de backend Yahoo).`,
+              ].join('\n'),
+            });
