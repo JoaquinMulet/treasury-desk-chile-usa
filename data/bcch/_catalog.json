@@ -11,28 +11,28 @@
   {
     "id": "F022.BUF.TIS.AN02.UF.Z.D",
     "name": "Yield UF 2Y",
-    "rows": 4202,
+    "rows": 4203,
     "first": "2005-01-25",
-    "last": "2026-06-24",
-    "last_value": 2.23,
+    "last": "2026-06-25",
+    "last_value": 2.21,
     "file": "data/bcch/F022.BUF.TIS.AN02.UF.Z.D.csv"
   },
   {
     "id": "F022.BUF.TIS.AN05.UF.Z.D",
     "name": "Yield UF 5Y",
-    "rows": 5521,
+    "rows": 5522,
     "first": "2002-09-10",
-    "last": "2026-06-24",
-    "last_value": 2.32,
+    "last": "2026-06-25",
+    "last_value": 2.31,
     "file": "data/bcch/F022.BUF.TIS.AN05.UF.Z.D.csv"
   },
   {
     "id": "F022.BUF.TIS.AN10.UF.Z.D",
     "name": "Yield UF 10Y",
-    "rows": 5526,
+    "rows": 5527,
     "first": "2002-09-10",
-    "last": "2026-06-24",
-    "last_value": 2.47,
+    "last": "2026-06-25",
+    "last_value": 2.45,
     "file": "data/bcch/F022.BUF.TIS.AN10.UF.Z.D.csv"
   },
   {
@@ -74,55 +74,55 @@
   {
     "id": "F022.BCLP.TIS.AN05.NO.Z.D",
     "name": "Yield CLP 5Y",
-    "rows": 5378,
+    "rows": 5379,
     "first": "2002-09-12",
-    "last": "2026-06-24",
-    "last_value": 5.19,
+    "last": "2026-06-25",
+    "last_value": 5.16,
     "file": "data/bcch/F022.BCLP.TIS.AN05.NO.Z.D.csv"
   },
   {
     "id": "F022.BCLP.TIS.AN10.NO.Z.D",
     "name": "Yield CLP 10Y",
-    "rows": 5250,
+    "rows": 5251,
     "first": "2004-07-15",
-    "last": "2026-06-24",
-    "last_value": 5.5,
+    "last": "2026-06-25",
+    "last_value": 5.46,
     "file": "data/bcch/F022.BCLP.TIS.AN10.NO.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN01.Z.Z.D",
     "name": "BEI swap 1Y",
-    "rows": 5743,
+    "rows": 5744,
     "first": "2002-11-25",
-    "last": "2026-06-25",
-    "last_value": 2.31141878526593,
+    "last": "2026-06-26",
+    "last_value": 2.22081937807754,
     "file": "data/bcch/F022.SWSP.TAS.AN01.Z.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN02.Z.Z.D",
     "name": "BEI swap 2Y",
-    "rows": 5359,
+    "rows": 5360,
     "first": "2005-01-11",
-    "last": "2026-06-25",
-    "last_value": 2.80449372773279,
+    "last": "2026-06-26",
+    "last_value": 2.77907272034015,
     "file": "data/bcch/F022.SWSP.TAS.AN02.Z.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN05.Z.Z.D",
     "name": "BEI swap 5Y",
-    "rows": 5360,
+    "rows": 5361,
     "first": "2005-01-11",
-    "last": "2026-06-25",
-    "last_value": 3.0751086902522,
+    "last": "2026-06-26",
+    "last_value": 3.04950779344941,
     "file": "data/bcch/F022.SWSP.TAS.AN05.Z.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN10.Z.Z.D",
     "name": "BEI swap 10Y",
-    "rows": 5360,
+    "rows": 5361,
     "first": "2005-01-11",
-    "last": "2026-06-25",
-    "last_value": 3.13646527998019,
+    "last": "2026-06-26",
+    "last_value": 3.12124590059151,
     "file": "data/bcch/F022.SWSP.TAS.AN10.Z.Z.D.csv"
   },
   {
@@ -137,37 +137,37 @@
   {
     "id": "F022.BOSP.TAS.AN05.Z.Z.D",
     "name": "BEI bonos 5Y",
-    "rows": 5552,
+    "rows": 5553,
     "first": "2002-09-12",
-    "last": "2026-06-25",
-    "last_value": 2.83730353495766,
+    "last": "2026-06-26",
+    "last_value": 2.84761234812996,
     "file": "data/bcch/F022.BOSP.TAS.AN05.Z.Z.D.csv"
   },
   {
     "id": "F022.BOSP.TAS.AN10.Z.Z.D",
     "name": "BEI bonos 10Y",
-    "rows": 5177,
+    "rows": 5178,
     "first": "2004-07-15",
-    "last": "2026-06-25",
-    "last_value": 2.99567907360567,
+    "last": "2026-06-26",
+    "last_value": 3.00600434064651,
     "file": "data/bcch/F022.BOSP.TAS.AN10.Z.Z.D.csv"
   },
   {
     "id": "F022.TPM.TIN.D001.NO.Z.D",
     "name": "TPM",
-    "rows": 6105,
+    "rows": 6106,
     "first": "2002-01-02",
-    "last": "2026-06-26",
+    "last": "2026-06-30",
     "last_value": 4.5,
     "file": "data/bcch/F022.TPM.TIN.D001.NO.Z.D.csv"
   },
   {
     "id": "F073.TCO.PRE.Z.D",
     "name": "USD/CLP",
-    "rows": 6105,
+    "rows": 6106,
     "first": "2002-01-02",
-    "last": "2026-06-26",
-    "last_value": 916.97,
+    "last": "2026-06-30",
+    "last_value": 922.34,
     "file": "data/bcch/F073.TCO.PRE.Z.D.csv"
   },
   {
