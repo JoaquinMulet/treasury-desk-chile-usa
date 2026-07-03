@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-07-02",
+  "as_of": "2026-07-03",
   "source": "Yahoo Finance \u00b7 via yfinance",
   "prices": {
     "tlt": 85.51,
@@ -11,8 +11,8 @@
     "iei": 117.11,
     "shy": 81.94,
     "sgov": 100.44,
-    "move": 65.3975,
-    "dxy": 100.937
+    "move": 66.79,
+    "dxy": 100.857
   },
   "changes_pct": {
     "tlt": {
@@ -61,14 +61,14 @@
       "month": 0.04
     },
     "move": {
-      "day": -2.08,
-      "week": -6.6,
-      "month": -6.23
+      "day": -0.46,
+      "week": 2.14,
+      "month": -5.8
     },
     "dxy": {
-      "day": -0.45,
-      "week": -0.49,
-      "month": 1.73
+      "day": -0.0,
+      "week": -0.5,
+      "month": 1.33
     }
   },
   "history": {
