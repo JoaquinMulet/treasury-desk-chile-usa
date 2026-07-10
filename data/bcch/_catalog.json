@@ -11,28 +11,28 @@
   {
     "id": "F022.BUF.TIS.AN02.UF.Z.D",
     "name": "Yield UF 2Y",
-    "rows": 4210,
+    "rows": 4211,
     "first": "2005-01-25",
-    "last": "2026-07-07",
-    "last_value": 2.15,
+    "last": "2026-07-08",
+    "last_value": 1.95,
     "file": "data/bcch/F022.BUF.TIS.AN02.UF.Z.D.csv"
   },
   {
     "id": "F022.BUF.TIS.AN05.UF.Z.D",
     "name": "Yield UF 5Y",
-    "rows": 5529,
+    "rows": 5530,
     "first": "2002-09-10",
-    "last": "2026-07-07",
-    "last_value": 2.27,
+    "last": "2026-07-08",
+    "last_value": 2.22,
     "file": "data/bcch/F022.BUF.TIS.AN05.UF.Z.D.csv"
   },
   {
     "id": "F022.BUF.TIS.AN10.UF.Z.D",
     "name": "Yield UF 10Y",
-    "rows": 5533,
+    "rows": 5534,
     "first": "2002-09-10",
-    "last": "2026-07-07",
-    "last_value": 2.45,
+    "last": "2026-07-08",
+    "last_value": 2.41,
     "file": "data/bcch/F022.BUF.TIS.AN10.UF.Z.D.csv"
   },
   {
@@ -74,55 +74,55 @@
   {
     "id": "F022.BCLP.TIS.AN05.NO.Z.D",
     "name": "Yield CLP 5Y",
-    "rows": 5386,
+    "rows": 5387,
     "first": "2002-09-12",
-    "last": "2026-07-07",
-    "last_value": 4.94,
+    "last": "2026-07-08",
+    "last_value": 5.0,
     "file": "data/bcch/F022.BCLP.TIS.AN05.NO.Z.D.csv"
   },
   {
     "id": "F022.BCLP.TIS.AN10.NO.Z.D",
     "name": "Yield CLP 10Y",
-    "rows": 5258,
+    "rows": 5259,
     "first": "2004-07-15",
-    "last": "2026-07-07",
-    "last_value": 5.4,
+    "last": "2026-07-08",
+    "last_value": 5.42,
     "file": "data/bcch/F022.BCLP.TIS.AN10.NO.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN01.Z.Z.D",
     "name": "BEI swap 1Y",
-    "rows": 5751,
+    "rows": 5752,
     "first": "2002-11-25",
-    "last": "2026-07-08",
-    "last_value": 2.66992316561803,
+    "last": "2026-07-09",
+    "last_value": 2.64869352193331,
     "file": "data/bcch/F022.SWSP.TAS.AN01.Z.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN02.Z.Z.D",
     "name": "BEI swap 2Y",
-    "rows": 5367,
+    "rows": 5368,
     "first": "2005-01-11",
-    "last": "2026-07-08",
-    "last_value": 2.95530879737682,
+    "last": "2026-07-09",
+    "last_value": 2.97041076550921,
     "file": "data/bcch/F022.SWSP.TAS.AN02.Z.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN05.Z.Z.D",
     "name": "BEI swap 5Y",
-    "rows": 5368,
+    "rows": 5369,
     "first": "2005-01-11",
-    "last": "2026-07-08",
-    "last_value": 3.11664801550839,
+    "last": "2026-07-09",
+    "last_value": 3.13700232701737,
     "file": "data/bcch/F022.SWSP.TAS.AN05.Z.Z.D.csv"
   },
   {
     "id": "F022.SWSP.TAS.AN10.Z.Z.D",
     "name": "BEI swap 10Y",
-    "rows": 5368,
+    "rows": 5369,
     "first": "2005-01-11",
-    "last": "2026-07-08",
-    "last_value": 3.18730409999191,
+    "last": "2026-07-09",
+    "last_value": 3.19726819622657,
     "file": "data/bcch/F022.SWSP.TAS.AN10.Z.Z.D.csv"
   },
   {
@@ -137,45 +137,45 @@
   {
     "id": "F022.BOSP.TAS.AN05.Z.Z.D",
     "name": "BEI bonos 5Y",
-    "rows": 5559,
+    "rows": 5560,
     "first": "2002-09-12",
-    "last": "2026-07-08",
-    "last_value": 2.76837987469731,
+    "last": "2026-07-09",
+    "last_value": 2.85906247310093,
     "file": "data/bcch/F022.BOSP.TAS.AN05.Z.Z.D.csv"
   },
   {
     "id": "F022.BOSP.TAS.AN10.Z.Z.D",
     "name": "BEI bonos 10Y",
-    "rows": 5183,
+    "rows": 5184,
     "first": "2004-07-15",
-    "last": "2026-07-08",
-    "last_value": 3.00645319408206,
+    "last": "2026-07-09",
+    "last_value": 3.04657255229737,
     "file": "data/bcch/F022.BOSP.TAS.AN10.Z.Z.D.csv"
   },
   {
     "id": "F022.TPM.TIN.D001.NO.Z.D",
     "name": "TPM",
-    "rows": 6113,
+    "rows": 6114,
     "first": "2002-01-02",
-    "last": "2026-07-09",
+    "last": "2026-07-10",
     "last_value": 4.5,
     "file": "data/bcch/F022.TPM.TIN.D001.NO.Z.D.csv"
   },
   {
     "id": "F073.TCO.PRE.Z.D",
     "name": "USD/CLP",
-    "rows": 6113,
+    "rows": 6114,
     "first": "2002-01-02",
-    "last": "2026-07-09",
-    "last_value": 935.71,
+    "last": "2026-07-10",
+    "last_value": 928.99,
     "file": "data/bcch/F073.TCO.PRE.Z.D.csv"
   },
   {
     "id": "F073.UFF.PRE.Z.D",
     "name": "UF",
-    "rows": 8956,
+    "rows": 8987,
     "first": "2002-01-01",
-    "last": "2026-07-09",
+    "last": "2026-08-09",
     "last_value": 40844.79,
     "file": "data/bcch/F073.UFF.PRE.Z.D.csv"
   }
